@@ -51,7 +51,6 @@ def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
         for x in range(len(sin10) - 1):
             wavelet.append(sin10[x] * gaus_window[x])    #multiply sin and gaussian to get wavelet
         tempChan2 = np.array(eeg1.chan2)
-        tempChan3 = np.array(eeg1.chan3)
         nData = len(tempChan2)
         nKern = len(wavelet)
         nConv = nData + nKern - 1
@@ -65,36 +64,45 @@ def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
         waveletMax = waveletX[index]
         waveletXn = [x / waveletMax for x in waveletX] #normalize freq domain
         dataX = np.fft.fft(tempChan2)  #freq domain data
-        dataX2 = np.fft.fft(tempChan3)
         if nConv - len(dataX) > 0:
             tempZ = np.zeros(nConv - len(dataX))
             dataX = np.concatenate((dataX,tempZ))
-            dataX2 = np.concatenate((dataX2, tempZ))
         convResult1 = []
-        convResult2 = []
         for x in range(len(dataX)):
             convResult1.append(dataX[x] * waveletXn[x])
-            convResult2.append(dataX2[x] * waveletXn[x])
         alpha1 = np.fft.ifft(convResult1)
-        alpha2 = np.fft.ifft(convResult2)
         alpha1Fin = alpha1[half_wav-1 : len(alpha1) - half_wav - 1]
-        alpha2Fin = alpha2[half_wav-1 : len(alpha2) - half_wav - 1]
+
+        signal2 = np.convolve(eeg1.chan3, wavelet)  #comb for alpha freq in eeg chan 3
         alpha1P = np.power(abs(alpha1),2) #find power in alpha band
-        alpha12 = np.power(abs(alpha2), 2)  # find power in alpha band
         dataTimes = np.arange(0, eeg1.nPnts / eeg1.sr, 1/ eeg1.sr)
+        # wave1 = np.fft.fft(eeg1.chan2)
+        #wave2 = np.fft.fft(eeg1.chan3)
+        #freq1 = np.fft.fftfreq(len(eeg1.nPnts), 1 / eeg1.sr)
+        #freq1 = freq1[:eeg1.nPnts//2]
+        #wave1 = 2/eeg1.nPnts*np.abs(wave1[:eeg1.nPnts//2])
+
         with open('dontTestMe.txt', 'w') as f:
             f.write(" Time = ")
             f.write(str(dataTimes))
             f.write("alpha = ")
             f.write(str(alpha1Fin))
+        print("Jimmy is a bean")
         print(str(eeg1.n))
         print(str(eeg1.nPnts))
-        plt.plot(dataTimes[0:598], alpha1Fin)
+        plt.plot(dataTimes, alpha1Fin)
         plt.show()
+<<<<<<< Updated upstream
+        exit()
+=======
+        a = 
+>>>>>>> Stashed changes
+
         #print(wave1)
     else:
         eeg1.n = eeg1.n + 1
     return eeg1
+    #print("X = ", s.x, ", Y = ", s.y, ", Z = ", s.z)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
